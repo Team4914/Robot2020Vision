@@ -1,8 +1,8 @@
 /* Uses edges and colour thresholding to determine ROI.
 *  TO DO: Contour detection
-*  2020 - 12 -09
+*  2020 - 12 - 09
 */
-#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgcodecs.hpp"#include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
@@ -62,15 +62,43 @@ int main() {
         Mat result;
         //Creating masks to detect the upper and lower green target color in BGR.
         inRange(dst, Scalar(0, 100, 0), Scalar(140, 255, 10), result);
+        //std::cout << result.type() << std::endl;
         //imshow("dst", mask1);
+        
+        Mat roiDetection;
+        roiDetection = result;
+        int counter = 0;
+        int top = NULL, bottom = 0, right = 0, left = roiDetection.size().width;
+        //find white pixel farthest from right, left, top and bottom to create parameters for an ROI
+        for (int i = 0; i < roiDetection.rows; i++) {
+            for (int j = 0; j < roiDetection.cols; j++) {
 
+                if ((int)roiDetection.at<uchar>(i, j) > 0) {
+                    top = (top == NULL) ? i : top;
+                    bottom = i;
+                    if (right < j) right = j;
+                    if (left > j) left = j;
+                    counter++;
+                }
+
+            }
+        }
+        Rect ROI(Point(right, bottom), Point(left, top));
+        rectangle(roiDetection, ROI.tl(), ROI.br(), Scalar(255), 1, 8, 0);
+        /* debugging
+        std::cout << "Number of point: " << counter << std::endl;
+        std::cout << "Top: " << top << std::endl;
+        std::cout << "Bottom: " << bottom << std::endl;
+        std::cout << "Left: " << left << std::endl;
+        std::cout << "Right: " << right << std::endl;
+        */
         //debugging
         //std::cout << frameNumber << std::endl;
         //frameNumber++;
 
         //record frame
-        video.write(mask1);
-
+        video.write(roiDetection);
+        
         // Press ESC on keyboard to exit
         char c = (char)waitKey(1);
         if (c == 27)
