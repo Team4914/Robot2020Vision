@@ -1,14 +1,14 @@
 /* Uses edges and colour thresholding to determine ROI.
-*  TO DO: Contour detection
-*  2020 - 12 - 09
+*  
+*  2020 - 12 - 10
 */
-#include "opencv2/imgcodecs.hpp"#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/opencv.hpp"
 #include <iostream>
 
-#define vid1 "video5.mp4"
+#define vid1 "video7_Trim.mp4"
 using namespace cv;
 // Canny detection parameters
 int cannythreshold = 30;
@@ -33,7 +33,7 @@ int main() {
     // -- Video recording --
     // Define the codec and create VideoWriter object.The output is stored in 'outcpp.avi' file. 
     // last arg is true if output video is in RGB
-    VideoWriter video("outcpp.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 25, tempsrc.size(), false);
+    VideoWriter video("outcpp.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 25, tempsrc.size(), true);
     int frameNumber = 1;
     while (1) {
         //dst - destination, detected_edges - image with canny output
@@ -61,7 +61,7 @@ int main() {
         //Colour detection
         Mat result;
         //Creating masks to detect the upper and lower green target color in BGR.
-        inRange(dst, Scalar(0, 100, 0), Scalar(140, 255, 10), result);
+        inRange(dst, Scalar(0, 70, 0), Scalar(130, 255, 10), result);
         //std::cout << result.type() << std::endl;
         //imshow("dst", mask1);
         
@@ -69,7 +69,6 @@ int main() {
         roiDetection = result;
         int counter = 0;
         int top = NULL, bottom = 0, right = 0, left = roiDetection.size().width;
-        //find white pixel farthest from right, left, top and bottom to create parameters for an ROI
         for (int i = 0; i < roiDetection.rows; i++) {
             for (int j = 0; j < roiDetection.cols; j++) {
 
@@ -83,9 +82,10 @@ int main() {
 
             }
         }
+        //Draw box around target on src image
         Rect ROI(Point(right, bottom), Point(left, top));
-        rectangle(roiDetection, ROI.tl(), ROI.br(), Scalar(255), 1, 8, 0);
-        /* debugging
+        rectangle(src, ROI.tl(), ROI.br(), Scalar(0,0,255), 5, 8, 0);
+        /*
         std::cout << "Number of point: " << counter << std::endl;
         std::cout << "Top: " << top << std::endl;
         std::cout << "Bottom: " << bottom << std::endl;
@@ -97,7 +97,7 @@ int main() {
         //frameNumber++;
 
         //record frame
-        video.write(roiDetection);
+        video.write(src);
         
         // Press ESC on keyboard to exit
         char c = (char)waitKey(1);
